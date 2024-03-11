@@ -1,56 +1,46 @@
-function handleSocket(io) {
-    const opcionesMenu = [
-        'Adivinanza del día',
-        'Frase inspiradora',
-        'Noticia interesante',
-        'Salir'
-    ];
+function socket(io) {
+    let historialChat = [];
 
-    const generarMenu = () => {
-        return `${opcionesMenu.map((opcion, index) => `${index + 1}. ${opcion}`).join('<br>')}`;
-    };
+    io.on("connection", (socket) => {
+        io.emit("saludo", "Hola soy el servidor");
+        let nombreUsuario;
 
-    io.on('connection', (socket) => {
-        socket.emit('respuesta-bot', [`🤖 ¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy? <br> ${generarMenu()}`]);
-        
-        socket.on('respuesta', async (opcion) => {
-            await realizarProceso(opcion.toLowerCase(), socket);
+        socket.on("mensaje", (mensaje) => {
+            historialChat.push({ usuario: nombreUsuario || 'Cliente', mensaje });
+
+            var respuesta;
+            switch (mensaje.toLowerCase()) {
+                case "hola":
+                    respuesta = "¡Hola! ¿En qué puedo ayudarte? (1) Chiste, (2) noticias, (3) elogio, (4) cancion, (5) acertijo, (6) insulto";
+                    break;
+                case "1":
+                    respuesta = "¿Cuál es el colmo de un electricista? Tener corriente alterna.";
+                    break;
+                case "2":
+                    respuesta = "¡Última hora! Las ovejas se han escapado del zoológico. Se reporta un gran caos en la ciudad.";
+                    break;
+                case "3":
+                    respuesta = "¡Wow! Eres increíblemente inteligente. ¡Sigue así!";
+                    break;
+                case "4":
+                    respuesta = "♪ ♫ Feliz, feliz en tu día, amiguito que Dios te bendiga, que reine la paz en tu vida, y que cumplas muchos más ♫ ♪";
+                    break;
+                case "5":
+                    respuesta = "¿Qué cosa es, que cuanto más grande, menos se ve? La oscuridad.";
+                    break;
+                case "6":
+                    respuesta = "Lo siento, no puedo responder a eso. Por favor, mantengamos la conversación respetuosa.";
+                    break;
+                default:
+                    respuesta = "Lo siento, no entendí eso. ¿Puedes repetirlo o necesitas ayuda con algo más?";
+                    break;
+            }
+
+            historialChat.push({ usuario: 'ChatBot', mensaje: respuesta });
+            socket.emit("respuesta", { respuesta });
+            io.emit("historial", historialChat);
         });
     });
-
-    const realizarProceso = async (proceso, socket) => {
-        switch (proceso) {
-            case opcionesMenu[0].toLowerCase():
-                await adivinanza(socket);
-                break;
-            case opcionesMenu[1].toLowerCase():
-                await fraseInspiradora(socket);
-                break;
-            case opcionesMenu[2].toLowerCase():
-                await noticiaInteresante(socket);
-                break;
-            case opcionesMenu[3].toLowerCase():
-                socket.emit('respuesta-bot', ['🤖 ¡Hasta luego!']);
-                break;
-            default:
-                socket.emit('respuesta-bot', ['🤖 Lo siento, no entendí la opción. Por favor, elige una opción válida del menú.']);
-        }
-    };
-
-    const adivinanza = async (socket) => {
-        await socket.emit('respuesta-bot', ['🔍 ¡Aquí tienes una adivinanza del día!', '¿Qué cosa siempre se rompe al ser nombrada?', 'Piensa bien...', 'La respuesta es... ¡el silencio!']);
-        await socket.emit('respuesta-bot', [`🤖 ¿En qué más puedo ayudarte? <br> ${generarMenu()}`]);
-    };
-
-    const fraseInspiradora = async (socket) => {
-        await socket.emit('respuesta-bot', ['💡 Aquí tienes una frase inspiradora:', 'El éxito no es definitivo, el fracaso no es fatal: lo que cuenta es el coraje para continuar. - Winston Churchill', '¡Que tengas un gran día!']);
-        await socket.emit('respuesta-bot', [`🤖 ¿En qué más puedo ayudarte? <br> ${generarMenu()}`]);
-    };
-
-    const noticiaInteresante = async (socket) => {
-        await socket.emit('respuesta-bot', ['📰 Te contaré una noticia interesante:', 'Una nueva investigación sugiere que los perros pueden entender algunas palabras humanas más de lo que pensábamos.', '¿Qué te parece eso?']);
-        await socket.emit('respuesta-bot', [`🤖 ¿En qué más puedo ayudarte? <br> ${generarMenu()}`]);
-    };
 }
 
-module.exports = handleSocket;
+module.exports = socket;

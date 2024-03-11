@@ -1,32 +1,25 @@
 const socket = io();
 
-const chatBody = document.getElementById('chatBody');
-const userInput = document.getElementById('userInput');
+var enviarDatos = document.getElementById("enviarDatos");
+enviarDatos.addEventListener("submit", (e) => {
+    e.preventDefault();
+    var mensaje = document.getElementById("mensaje").value;
+    socket.emit("mensaje", mensaje);
 
-const mostrarMensaje = (mensaje, esUsuario = false) => {
-    const mensajeElement = document.createElement('p');
-    mensajeElement.innerHTML = mensaje;
-    mensajeElement.classList.add(esUsuario ? 'user-message' : 'bot-message');
-    chatBody.appendChild(mensajeElement);
-};
-
-const manejarRespuesta = (respuestas) => {
-    respuestas.forEach((respuesta) => {
-        setTimeout(() => {
-            mostrarMensaje(respuesta, false);
-        }, 1000);
-    });
-};
-
-userInput.addEventListener('keypress', function (event) {
-    if (event.key === 'Enter') {
-        const userMessage = event.target.value;
-        mostrarMensaje(userMessage, true);
-        socket.emit('respuesta', userMessage);
-        userInput.value = '';
-        
-    }
+    document.getElementById("mensaje").value = "";
 });
 
-socket.on('respuesta-bot', manejarRespuesta);
-socket.emit('iniciar-conversacion');
+socket.on("respuesta", ({ respuesta }) => {
+    var historialHTML = document.getElementById("historial-chat").innerHTML;
+
+    historialHTML += `<div>ChatBot: ${respuesta}</div>`;
+    document.getElementById("historial-chat").innerHTML = historialHTML;
+});
+
+socket.on("historial", (historialChat) => {
+    var historialHTML = "";
+    historialChat.forEach((item) => {
+        historialHTML += `<div>${item.usuario}: ${item.mensaje}</div>`;
+    });
+    document.getElementById("historial-chat").innerHTML = historialHTML;
+});

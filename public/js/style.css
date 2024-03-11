@@ -1,0 +1,34 @@
+body {
+    background-color: #f0f0f0;
+}
+
+.chat-container {
+    margin-top: 50px;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.input-container {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.transparent-placeholder::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.send-btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.hoover:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
